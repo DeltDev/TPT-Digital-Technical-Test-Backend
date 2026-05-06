@@ -153,3 +153,35 @@ func (h *ProductHandler) UpdateProduct(c *gin.Context) {
 		"data": updated,
 	})
 }
+
+
+//endpoint DELETE /products/:id
+
+func (h *ProductHandler) DeleteProduct(c *gin.Context) {
+	idParam := c.Param("id")
+
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "invalid id",
+		})
+		return
+	}
+
+	errDelete := h.repo.Delete(int64(id))
+	if errDelete != nil {
+		if errDelete.Error() == "product not found" {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "product not found",
+			})
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "internal server error",
+		})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}

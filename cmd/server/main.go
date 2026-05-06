@@ -23,6 +23,7 @@ func main() {
 	r.GET("/products/:id", productHandler.GetProductByID)
 	r.POST("/products", productHandler.CreateProduct)
 	r.PUT("/products/:id", productHandler.UpdateProduct)
+	r.DELETE("/products/:id", productHandler.DeleteProduct)
 	
 	if err := r.Run(":8080"); err != nil {
 		log.Fatal(err)
