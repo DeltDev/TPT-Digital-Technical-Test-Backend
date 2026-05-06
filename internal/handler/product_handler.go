@@ -98,3 +98,58 @@ func (h *ProductHandler) CreateProduct(c *gin.Context){
 		"data": created,
 	})
 }
+
+//endpoint PUT /products/:id
+func (h *ProductHandler) UpdateProduct(c *gin.Context) {
+	idParam := c.Param("id")
+
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "invalid id",
+		})
+		return
+	}
+
+	var req dto.UpdateProductRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	isActive := true
+	if req.IsActive != nil {
+		isActive = *req.IsActive
+	}
+
+	product := model.Product{
+		Name:        req.Name,
+		Description: req.Description,
+		Price:       req.Price,
+		Stock:       req.Stock,
+		Category:    req.Category,
+		IsActive:    isActive,
+	}
+
+	updated, err := h.repo.Update(int64(id), product)
+	if err != nil {
+		if err.Error() == "product not found" {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "product not found",
+			})
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": updated,
+	})
+}
