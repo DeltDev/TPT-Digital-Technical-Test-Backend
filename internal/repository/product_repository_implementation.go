@@ -23,7 +23,6 @@ func (r *productRepository) GetAllProducts() ([]model.Product, error) {
 	query := `
 		SELECT id, name, description, price, stock, category, is_active, created_at, updated_at
 		FROM products
-		ORDER BY id DESC
 	`
 
 	err := r.db.Select(&products, query)
@@ -34,7 +33,6 @@ func (r *productRepository) GetAllProducts() ([]model.Product, error) {
 	return products, nil
 }
 
-// =========================
 func (r *productRepository) GetProductByID(id int64) (*model.Product, error) {
 	var product model.Product
 
