@@ -21,7 +21,8 @@ func main() {
 
 	r.GET("/products", productHandler.GetAllProducts)
 	r.GET("/products/:id", productHandler.GetProductByID)
-
+	r.POST("/products", productHandler.CreateProduct)
+	
 	if err := r.Run(":8080"); err != nil {
 		log.Fatal(err)
 	}

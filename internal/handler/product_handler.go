@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/DeltDev/TPT-Digital-Technical-Test-Backend/internal/dto"
+	"github.com/DeltDev/TPT-Digital-Technical-Test-Backend/internal/model"
 	"github.com/DeltDev/TPT-Digital-Technical-Test-Backend/internal/repository"
 	"github.com/gin-gonic/gin"
 )
@@ -58,3 +60,41 @@ func (h *ProductHandler) GetProductByID(c *gin.Context){
 	})
 }
 
+// endpoint POST /products
+
+func (h *ProductHandler) CreateProduct(c *gin.Context){
+	var req dto.CreateProductRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	isActive := true
+	if req.IsActive != nil {
+		isActive = *req.IsActive
+	}
+
+	product := model.Product{
+		Name:        req.Name,
+		Description: req.Description,
+		Price:       req.Price,
+		Stock:       req.Stock,
+		Category:    req.Category,
+		IsActive:    isActive,
+	}
+
+	created, err := h.repo.Create(product)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"data": created,
+	})
+}
