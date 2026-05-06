@@ -14,7 +14,11 @@ docker build -t tpt-postgres -f docker/Dockerfile .
 docker run -d --name tpt-db -p 5432:5432 tpt-postgres
 ```
 
-TBA
+3. Run Backend Server
+
+```bash
+go run cmd/server/main.go
+```
 
 ## Other Commands
 - Access PostgreSQL inside docker
@@ -22,4 +26,9 @@ TBA
 docker exec -it tpt-db psql -U tpttechnicaltest -d tpttechnicaltest
 
 When prompted password, the password is tpttechnicaltest
+```
+
+- Run unit test for all endpoints
+```bash
+go test -v ./internal/handler/...
 ```
