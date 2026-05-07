@@ -394,15 +394,16 @@ internal/
 2. Go v1.26.2 or later
 
 ### Steps
-1. Build PostgreSQL image
+1. Copy the ```.env.example``` file and rename it into ```.env``
+2. Build PostgreSQL image
 ```bash
 docker build -t tpt-postgres -f docker/Dockerfile .
 ```
-2. Run PostgreSQL image
+3. Run PostgreSQL image
 ```bash
 docker run -d --name tpt-db -p 5432:5432 tpt-postgres
 ```
-3. Run Backend Server
+4. Run Backend Server
 
 ```bash
 go run cmd/server/main.go
