@@ -7,6 +7,7 @@ import (
 	"github.com/DeltDev/TPT-Digital-Technical-Test-Backend/internal/handler"
 	"github.com/DeltDev/TPT-Digital-Technical-Test-Backend/internal/repository"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-contrib/cors"
 )
 
 func main() {
@@ -18,7 +19,7 @@ func main() {
 	productHandler := handler.NewProductHandler(productRepo)
 
 	r := gin.Default()
-
+	r.Use(cors.Default())
 	r.GET("/products", productHandler.GetAllProducts)
 	r.GET("/products/:id", productHandler.GetProductByID)
 	r.POST("/products", productHandler.CreateProduct)
