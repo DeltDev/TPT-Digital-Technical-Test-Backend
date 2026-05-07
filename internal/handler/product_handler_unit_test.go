@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 	"errors"
+	"bytes"
 
 	"github.com/DeltDev/TPT-Digital-Technical-Test-Backend/internal/model"
 	"github.com/gin-gonic/gin"
@@ -51,7 +52,9 @@ func (m *MockProductRepository) GetProductByID(id int64) (*model.Product, error)
 }
 
 func (m *MockProductRepository) Create(product model.Product) (*model.Product, error) {
-	return nil, nil
+	product.ID = 99
+
+	return &product, nil
 }
 
 func (m *MockProductRepository) Update(id int64, product model.Product) (*model.Product, error) {
@@ -178,4 +181,77 @@ func TestGetProductByID_InvalidID(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, "invalid id", errorResponse["error"])
+}
+
+func TestCreateProduct_Success(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mockRepo := &MockProductRepository{}
+	productHandler := NewProductHandler(mockRepo)
+
+	router := gin.Default()
+	router.POST("/products", productHandler.CreateProduct)
+
+	requestBody := `{
+		"name": "Test Product",
+		"description": "Test Description",
+		"price": 10000,
+		"stock": 5,
+		"category": "Testing",
+		"is_active": true
+	}`
+
+	req, _ := http.NewRequest(
+		http.MethodPost,
+		"/products",
+		bytes.NewBuffer([]byte(requestBody)),
+	)
+
+	req.Header.Set("Content-Type", "application/json")
+
+	recorder := httptest.NewRecorder()
+
+	router.ServeHTTP(recorder, req)
+
+	assert.Equal(t, http.StatusCreated, recorder.Code)
+
+	var response map[string]model.Product
+	err := json.Unmarshal(recorder.Body.Bytes(), &response)
+
+	assert.NoError(t, err)
+
+	assert.Equal(t, int64(99), response["data"].ID)
+	assert.Equal(t, "Test Product", response["data"].Name)
+	assert.Equal(t, int64(10000), response["data"].Price)
+}
+
+func TestCreateProduct_ValidationFailed(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mockRepo := &MockProductRepository{}
+	productHandler := NewProductHandler(mockRepo)
+
+	router := gin.Default()
+	router.POST("/products", productHandler.CreateProduct)
+
+	requestBody := `{
+		"description": "Missing name",
+		"price": 10000,
+		"stock": 5,
+		"category": "Testing"
+	}`
+
+	req, _ := http.NewRequest(
+		http.MethodPost,
+		"/products",
+		bytes.NewBuffer([]byte(requestBody)),
+	)
+
+	req.Header.Set("Content-Type", "application/json")
+
+	recorder := httptest.NewRecorder()
+
+	router.ServeHTTP(recorder, req)
+
+	assert.Equal(t, http.StatusBadRequest, recorder.Code)
 }
