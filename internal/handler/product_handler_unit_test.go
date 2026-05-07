@@ -58,7 +58,13 @@ func (m *MockProductRepository) Create(product model.Product) (*model.Product, e
 }
 
 func (m *MockProductRepository) Update(id int64, product model.Product) (*model.Product, error) {
-	return nil, nil
+	if id != 1 {
+		return nil, errors.New("product not found")
+	}
+
+	product.ID = id
+
+	return &product, nil
 }
 
 func (m *MockProductRepository) Delete(id int64) error {
@@ -260,6 +266,158 @@ func TestCreateProduct_ValidationFailed(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, recorder.Code)
 }
 
+func TestUpdateProduct_Success(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mockRepo := &MockProductRepository{}
+	productHandler := NewProductHandler(mockRepo)
+
+	router := gin.Default()
+	router.PUT("/products/:id", productHandler.UpdateProduct)
+
+	requestBody := `{
+		"name": "Updated Product",
+		"description": "Updated Description",
+		"price": 99999,
+		"stock": 50,
+		"category": "Updated",
+		"is_active": true
+	}`
+
+	req, _ := http.NewRequest(
+		http.MethodPut,
+		"/products/1",
+		bytes.NewBuffer([]byte(requestBody)),
+	)
+
+	req.Header.Set("Content-Type", "application/json")
+
+	recorder := httptest.NewRecorder()
+
+	router.ServeHTTP(recorder, req)
+
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	var response map[string]model.Product
+
+	err := json.Unmarshal(recorder.Body.Bytes(), &response)
+
+	assert.NoError(t, err)
+
+	assert.Equal(t, int64(1), response["data"].ID)
+	assert.Equal(t, "Updated Product", response["data"].Name)
+	assert.Equal(t, int64(99999), response["data"].Price)
+}
+
+func TestUpdateProduct_ValidationFailed(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mockRepo := &MockProductRepository{}
+	productHandler := NewProductHandler(mockRepo)
+
+	router := gin.Default()
+	router.PUT("/products/:id", productHandler.UpdateProduct)
+
+	requestBody := `{
+		"description": "Missing required fields"
+	}`
+
+	req, _ := http.NewRequest(
+		http.MethodPut,
+		"/products/1",
+		bytes.NewBuffer([]byte(requestBody)),
+	)
+
+	req.Header.Set("Content-Type", "application/json")
+
+	recorder := httptest.NewRecorder()
+
+	router.ServeHTTP(recorder, req)
+
+	assert.Equal(t, http.StatusBadRequest, recorder.Code)
+}
+
+func TestUpdateProduct_NotFound(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mockRepo := &MockProductRepository{}
+	productHandler := NewProductHandler(mockRepo)
+
+	router := gin.Default()
+	router.PUT("/products/:id", productHandler.UpdateProduct)
+
+	requestBody := `{
+		"name": "Updated Product",
+		"description": "Updated Description",
+		"price": 99999,
+		"stock": 50,
+		"category": "Updated",
+		"is_active": true
+	}`
+
+	req, _ := http.NewRequest(
+		http.MethodPut,
+		"/products/999",
+		bytes.NewBuffer([]byte(requestBody)),
+	)
+
+	req.Header.Set("Content-Type", "application/json")
+
+	recorder := httptest.NewRecorder()
+
+	router.ServeHTTP(recorder, req)
+
+	assert.Equal(t, http.StatusNotFound, recorder.Code)
+
+	var errorResponse map[string]string
+
+	err := json.Unmarshal(recorder.Body.Bytes(), &errorResponse)
+
+	assert.NoError(t, err)
+
+	assert.Equal(t, "product not found", errorResponse["error"])
+}
+
+func TestUpdateProduct_InvalidID(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mockRepo := &MockProductRepository{}
+	productHandler := NewProductHandler(mockRepo)
+
+	router := gin.Default()
+	router.PUT("/products/:id", productHandler.UpdateProduct)
+
+	requestBody := `{
+		"name": "Updated Product",
+		"description": "Updated Description",
+		"price": 99999,
+		"stock": 50,
+		"category": "Updated",
+		"is_active": true
+	}`
+
+	req, _ := http.NewRequest(
+		http.MethodPut,
+		"/products/abc",
+		bytes.NewBuffer([]byte(requestBody)),
+	)
+
+	req.Header.Set("Content-Type", "application/json")
+
+	recorder := httptest.NewRecorder()
+
+	router.ServeHTTP(recorder, req)
+
+	assert.Equal(t, http.StatusBadRequest, recorder.Code)
+
+	var errorResponse map[string]string
+
+	err := json.Unmarshal(recorder.Body.Bytes(), &errorResponse)
+
+	assert.NoError(t, err)
+
+	assert.Equal(t, "invalid id", errorResponse["error"])
+}
 
 //unit test untuk endpoint DELETE:id
 
