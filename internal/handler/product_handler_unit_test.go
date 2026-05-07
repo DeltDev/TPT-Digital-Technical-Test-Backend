@@ -62,7 +62,11 @@ func (m *MockProductRepository) Update(id int64, product model.Product) (*model.
 }
 
 func (m *MockProductRepository) Delete(id int64) error {
-	return nil
+	if id == 1 {
+		return nil
+	}
+
+	return errors.New("product not found")
 }
 
 
@@ -254,4 +258,58 @@ func TestCreateProduct_ValidationFailed(t *testing.T) {
 	router.ServeHTTP(recorder, req)
 
 	assert.Equal(t, http.StatusBadRequest, recorder.Code)
+}
+
+
+//unit test untuk endpoint DELETE:id
+
+func TestDeleteProduct_Success(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mockRepo := &MockProductRepository{}
+	productHandler := NewProductHandler(mockRepo)
+
+	router := gin.Default()
+	router.DELETE("/products/:id", productHandler.DeleteProduct)
+
+	req, _ := http.NewRequest(
+		http.MethodDelete,
+		"/products/1",
+		nil,
+	)
+
+	recorder := httptest.NewRecorder()
+
+	router.ServeHTTP(recorder, req)
+
+	assert.Equal(t, http.StatusNoContent, recorder.Code)
+}
+
+func TestDeleteProduct_NotFound(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mockRepo := &MockProductRepository{}
+	productHandler := NewProductHandler(mockRepo)
+
+	router := gin.Default()
+	router.DELETE("/products/:id", productHandler.DeleteProduct)
+
+	req, _ := http.NewRequest(
+		http.MethodDelete,
+		"/products/999",
+		nil,
+	)
+
+	recorder := httptest.NewRecorder()
+
+	router.ServeHTTP(recorder, req)
+
+	assert.Equal(t, http.StatusNotFound, recorder.Code)
+
+	var errorResponse map[string]string
+
+	err := json.Unmarshal(recorder.Body.Bytes(), &errorResponse)
+
+	assert.NoError(t, err)
+	assert.Equal(t, "product not found", errorResponse["error"])
 }
