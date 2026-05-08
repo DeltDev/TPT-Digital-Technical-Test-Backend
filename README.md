@@ -394,7 +394,7 @@ internal/
 2. Go v1.26.2 or later
 
 ### Steps
-1. Copy the ```.env.example``` file and rename it into ```.env``
+1. Copy the ```.env.example``` file and rename it into ```.env```
 2. Build PostgreSQL image
 ```bash
 docker build -t tpt-postgres -f docker/Dockerfile .

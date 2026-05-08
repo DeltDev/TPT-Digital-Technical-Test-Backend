@@ -193,6 +193,7 @@ func TestGetProductByID_InvalidID(t *testing.T) {
 	assert.Equal(t, "invalid id", errorResponse["error"])
 }
 
+//unit test untuk endpoint POST /product (sukses)
 func TestCreateProduct_Success(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
@@ -234,7 +235,7 @@ func TestCreateProduct_Success(t *testing.T) {
 	assert.Equal(t, "Test Product", response["data"].Name)
 	assert.Equal(t, int64(10000), response["data"].Price)
 }
-
+//unit test untuk endpoint POST /product (validasi gagal)
 func TestCreateProduct_ValidationFailed(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
@@ -266,6 +267,7 @@ func TestCreateProduct_ValidationFailed(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, recorder.Code)
 }
 
+//unit test untuk endpoint PUT /products/:id (sukses)
 func TestUpdateProduct_Success(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
@@ -308,6 +310,7 @@ func TestUpdateProduct_Success(t *testing.T) {
 	assert.Equal(t, "Updated Product", response["data"].Name)
 	assert.Equal(t, int64(99999), response["data"].Price)
 }
+//unit test untuk endpoint PUT /products/:id (gagal)
 
 func TestUpdateProduct_ValidationFailed(t *testing.T) {
 	gin.SetMode(gin.TestMode)
@@ -336,7 +339,7 @@ func TestUpdateProduct_ValidationFailed(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, recorder.Code)
 }
-
+//unit test untuk endpoint PUT /products/:id (produk yang diedit tidak ada)
 func TestUpdateProduct_NotFound(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
@@ -377,7 +380,7 @@ func TestUpdateProduct_NotFound(t *testing.T) {
 
 	assert.Equal(t, "product not found", errorResponse["error"])
 }
-
+//unit test untuk endpoint PUT /products/:id (ID tidak valid)
 func TestUpdateProduct_InvalidID(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
@@ -419,7 +422,7 @@ func TestUpdateProduct_InvalidID(t *testing.T) {
 	assert.Equal(t, "invalid id", errorResponse["error"])
 }
 
-//unit test untuk endpoint DELETE:id
+//unit test untuk endpoint DELETE /products/:id (sukses)
 
 func TestDeleteProduct_Success(t *testing.T) {
 	gin.SetMode(gin.TestMode)
@@ -442,7 +445,7 @@ func TestDeleteProduct_Success(t *testing.T) {
 
 	assert.Equal(t, http.StatusNoContent, recorder.Code)
 }
-
+//unit test untuk endpoint DELETE /products/:id (produk tidak ada)
 func TestDeleteProduct_NotFound(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
